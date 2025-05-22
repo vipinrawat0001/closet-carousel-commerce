@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ const Auth = () => {
   const { signIn, signUp, user } = useStore();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
   
   // Redirect if already logged in
   React.useEffect(() => {
@@ -65,7 +66,7 @@ const Auth = () => {
         description: "You can now sign in with your new account.",
       });
       // Switch to sign in tab
-      document.querySelector('[data-state="inactive"][data-value="signin"]')?.click();
+      setActiveTab("signin");
     } catch (error) {
       console.error('Sign up error:', error);
     } finally {
@@ -79,7 +80,7 @@ const Auth = () => {
 
   return (
     <div className="container max-w-md py-12">
-      <Tabs defaultValue="signin">
+      <Tabs defaultValue="signin" value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signin">Sign In</TabsTrigger>
           <TabsTrigger value="signup">Sign Up</TabsTrigger>
