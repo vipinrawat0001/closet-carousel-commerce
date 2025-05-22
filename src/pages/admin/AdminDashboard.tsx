@@ -1,7 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ShoppingBag, 
@@ -32,6 +32,8 @@ const AdminDashboard = () => {
     lowStockProducts: 0
   });
   const [loading, setLoading] = useState(true);
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [ordersData, setOrdersData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -64,6 +66,24 @@ const AdminDashboard = () => {
           .select('*', { count: 'exact', head: true })
           .or('buy_stock.lte.5,rent_stock.lte.2');
 
+        // Fetch sales data for the chart
+        // This is example data - you would fetch actual data from your database
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        const sampleSalesData = months.map(month => ({
+          name: month,
+          Sales: Math.floor(Math.random() * 100),
+          Rentals: Math.floor(Math.random() * 50)
+        }));
+        
+        // Example orders data
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const sampleOrdersData = days.map(day => ({
+          name: day,
+          Orders: Math.floor(Math.random() * 20)
+        }));
+
+        setSalesData(sampleSalesData);
+        setOrdersData(sampleOrdersData);
         setStats({
           totalBuyOrders: buyOrdersCount || 0,
           totalRentOrders: rentOrdersCount || 0,
@@ -80,55 +100,6 @@ const AdminDashboard = () => {
 
     fetchStats();
   }, []);
-
-  // Sample data for charts
-  const salesData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Sales',
-        data: [65, 59, 80, 81, 56, 55],
-        backgroundColor: 'rgba(99, 102, 241, 0.5)',
-        borderColor: 'rgb(99, 102, 241)',
-      },
-      {
-        label: 'Rentals',
-        data: [28, 48, 40, 19, 86, 27],
-        backgroundColor: 'rgba(14, 165, 233, 0.5)',
-        borderColor: 'rgb(14, 165, 233)',
-      },
-    ],
-  };
-
-  const ordersData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [
-      {
-        label: 'Orders',
-        data: [12, 19, 3, 5, 2, 3, 9],
-        borderColor: 'rgb(99, 102, 241)',
-        tension: 0.4,
-        fill: false,
-      },
-    ],
-  };
-
-  // Convert datasets to recharts format
-  const rechartsBarData = salesData.labels.map((label, index) => {
-    const dataPoint: Record<string, any> = { name: label };
-    salesData.datasets.forEach(dataset => {
-      dataPoint[dataset.label] = dataset.data[index];
-    });
-    return dataPoint;
-  });
-
-  const rechartsLineData = ordersData.labels.map((label, index) => {
-    const dataPoint: Record<string, any> = { name: label };
-    ordersData.datasets.forEach(dataset => {
-      dataPoint[dataset.label] = dataset.data[index];
-    });
-    return dataPoint;
-  });
 
   if (loading) {
     return <div className="p-8 text-center">Loading dashboard data...</div>;
@@ -178,7 +149,7 @@ const AdminDashboard = () => {
               <TabsContent value="bar">
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsBarChart data={rechartsBarData}>
+                    <RechartsBarChart data={salesData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
@@ -192,7 +163,7 @@ const AdminDashboard = () => {
               <TabsContent value="line">
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsLineChart data={rechartsLineData}>
+                    <RechartsLineChart data={ordersData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />

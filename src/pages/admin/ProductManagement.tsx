@@ -26,13 +26,11 @@ import {
   MoreHorizontal, 
   Edit, 
   Trash2,
-  Filter,
-  ArrowUpDown,
   Eye
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-interface Product {
+type Product = {
   id: string;
   name: string;
   category: string;
@@ -42,7 +40,7 @@ interface Product {
   is_purchasable: boolean;
   is_rentable: boolean;
   created_at: string;
-}
+};
 
 const ProductManagement = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -69,6 +67,8 @@ const ProductManagement = () => {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
+      
+      console.log('Products fetched:', data);
       setProducts(data || []);
     } catch (error) {
       console.error('Error fetching products:', error);

@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProductManagement from "./pages/admin/ProductManagement";
+import ProductEditor from "./pages/admin/ProductEditor";
 import OrderTracking from "./pages/admin/OrderTracking";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,8 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="products" element={<ProductManagement />} />
+              <Route path="products/new" element={<ProductEditor />} />
+              <Route path="products/edit/:id" element={<ProductEditor />} />
               <Route path="buy-orders" element={<OrderTracking />} />
               <Route path="rent-orders" element={<OrderTracking />} />
               <Route path="customers" element={<div>Customers Management</div>} />
