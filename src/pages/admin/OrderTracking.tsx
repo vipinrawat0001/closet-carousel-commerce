@@ -37,10 +37,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 
+// Define the allowed status types
+type BuyOrderStatus = 'Pending' | 'Packed' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+type RentOrderStatus = 'Booked' | 'Out for Delivery' | 'Active' | 'Returned' | 'Cancelled';
+
 interface Order {
   id: string;
   user_id: string;
-  status: string;
+  status: BuyOrderStatus; // Use the defined type here
   total_amount: number;
   created_at: string;
   updated_at: string;
@@ -53,7 +57,7 @@ interface Order {
 interface RentalOrder {
   id: string;
   user_id: string;
-  status: string;
+  status: RentOrderStatus; // Use the defined type here
   total_rent_amount: number;
   total_deposit: number;
   created_at: string;
@@ -68,6 +72,10 @@ const OrderTracking = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Define the allowed statuses as constants
+  const buyOrderStatuses: BuyOrderStatus[] = ['Pending', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'];
+  const rentOrderStatuses: RentOrderStatus[] = ['Booked', 'Out for Delivery', 'Active', 'Returned', 'Cancelled'];
 
   useEffect(() => {
     if (orderType === 'buy') {
@@ -86,7 +94,14 @@ const OrderTracking = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      setBuyOrders(data || []);
+      
+      // Ensure the data conforms to our expected type
+      const typedData = data?.map(order => ({
+        ...order,
+        status: order.status as BuyOrderStatus
+      })) || [];
+      
+      setBuyOrders(typedData);
     } catch (error) {
       console.error('Error fetching buy orders:', error);
       toast({
@@ -108,7 +123,14 @@ const OrderTracking = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      setRentOrders(data || []);
+      
+      // Ensure the data conforms to our expected type
+      const typedData = data?.map(order => ({
+        ...order,
+        status: order.status as RentOrderStatus
+      })) || [];
+      
+      setRentOrders(typedData);
     } catch (error) {
       console.error('Error fetching rent orders:', error);
       toast({
@@ -121,7 +143,7 @@ const OrderTracking = () => {
     }
   };
 
-  const updateBuyOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateBuyOrderStatus = async (orderId: string, newStatus: BuyOrderStatus) => {
     try {
       const { error } = await supabase
         .from('buy_orders')
@@ -150,7 +172,7 @@ const OrderTracking = () => {
     }
   };
 
-  const updateRentOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateRentOrderStatus = async (orderId: string, newStatus: RentOrderStatus) => {
     try {
       const { error } = await supabase
         .from('rent_orders')
@@ -210,9 +232,6 @@ const OrderTracking = () => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-
-  const buyOrderStatuses = ['Pending', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'];
-  const rentOrderStatuses = ['Booked', 'Out for Delivery', 'Active', 'Returned', 'Cancelled'];
 
   return (
     <div className="space-y-6">

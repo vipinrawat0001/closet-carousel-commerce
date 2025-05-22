@@ -1,8 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, LineChart } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ShoppingBag, 
@@ -12,6 +11,17 @@ import {
   TrendingUp, 
   AlertTriangle 
 } from 'lucide-react';
+import { 
+  BarChart as RechartsBarChart, 
+  Bar, 
+  LineChart as RechartsLineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -103,6 +113,23 @@ const AdminDashboard = () => {
     ],
   };
 
+  // Convert datasets to recharts format
+  const rechartsBarData = salesData.labels.map((label, index) => {
+    const dataPoint: Record<string, any> = { name: label };
+    salesData.datasets.forEach(dataset => {
+      dataPoint[dataset.label] = dataset.data[index];
+    });
+    return dataPoint;
+  });
+
+  const rechartsLineData = ordersData.labels.map((label, index) => {
+    const dataPoint: Record<string, any> = { name: label };
+    ordersData.datasets.forEach(dataset => {
+      dataPoint[dataset.label] = dataset.data[index];
+    });
+    return dataPoint;
+  });
+
   if (loading) {
     return <div className="p-8 text-center">Loading dashboard data...</div>;
   }
@@ -149,10 +176,31 @@ const AdminDashboard = () => {
                 <TabsTrigger value="line">Line</TabsTrigger>
               </TabsList>
               <TabsContent value="bar">
-                <BarChart data={salesData} />
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart data={rechartsBarData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="Sales" fill="rgba(99, 102, 241, 0.5)" />
+                      <Bar dataKey="Rentals" fill="rgba(14, 165, 233, 0.5)" />
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
+                </div>
               </TabsContent>
               <TabsContent value="line">
-                <LineChart data={ordersData} />
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsLineChart data={rechartsLineData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="Orders" stroke="rgb(99, 102, 241)" strokeWidth={2} dot={{ r: 4 }} />
+                    </RechartsLineChart>
+                  </ResponsiveContainer>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
